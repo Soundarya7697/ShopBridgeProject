@@ -1,0 +1,48 @@
+﻿
+@{
+    ViewBag.Title = "Product";
+}
+
+<body onload="init();">
+    <div class="container">
+        <div class="row mt-5">
+            <div class="col-sm-12">
+                <h3>Product</h3>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-sm-5">
+                <form id="productForm" class="form horizontal">
+                    <div class="form-group d-none">
+                        <input type="hidden" class="form-control" name="productId" id="productId">
+                    </div>
+                    <div class="form-group">
+                        <label for="productName">Product Name</label>
+                        <input type="text" class="form-control" name="productName" id="productName" placeholder="Enter Product Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="productCode">Product Code</label>
+                        <input type="text" class="form-control" name="productCode" id="productCode" placeholder="Enter Product Code">
+                    </div>
+                    <div class="form-group">
+                        <label for="productDescription">Description</label>
+                        <input type="text" class="form-control" name="productDescription" id="productDescription" placeholder="Enter Product Description">
+                    </div>
+                    <div class="form-group">
+                        <label for="productPrice">Price</label>
+                        <input type="text" class="form-control" name="productPrice" id="productPrice" placeholder="Enter Product Price">
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="addProduct()"><i class='fa fa-plus'></i> Add</button>
+                    <button type="button" class="btn btn-secondary" onclick="modifyProduct()"><i class='fa fa-edit'></i> Modify</button>
+                    <button type="button" class="btn btn-light" onclick="clearForm()"><i class='fa fa-times'></i> Clear</button>
+                    <button type="button" class="btn btn-light" onclick="getAllProduct()"><i class='fa fa-plus'></i> GetAll</button>
+
+                </form>
+            </div>
+            <div class="col-sm-4 offset-sm-3">
+                <ul class="list-group" id="productList">
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
