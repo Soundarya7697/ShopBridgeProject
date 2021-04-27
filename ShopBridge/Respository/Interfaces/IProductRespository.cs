@@ -11,9 +11,10 @@ namespace ShopBridge.Respository.Interfaces
 
         Product GetProductById (int productID);
 
-        bool DeleteApplication(int productId);
+        bool DeleteProduct(int productId);
 
-        
+        bool ModifyProduct (Product product);
+
     }
 
 }

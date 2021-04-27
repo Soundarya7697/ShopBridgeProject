@@ -19,14 +19,14 @@ namespace ShopBridge.Controllers
         /// <summary>Gets all Products/Products based on ID.</summary>
         /// <param name="productID">The product identifier is an optional parameter.</param>
         [HttpGet]
-        public ActionResult GetAllProducts(int productID = 0)
+        public JsonResult GetAllProducts(int productID = 0)
         {
             try
             {
                 if (productID > 0)
                 {
                     var selectedProduct = _productRepository.GetProductById(productID);
-                    return View("~/Views/Product/Product.cshtml", selectedProduct);
+                    return Json(selectedProduct, JsonRequestBehavior.AllowGet);
 
                 }
                 else
@@ -41,13 +41,14 @@ namespace ShopBridge.Controllers
             }
         }
 
+        [HttpPost]
         /// <summary>Deletes the specified product identifier.</summary>
         /// <param name="productID">The product identifier.</param>
-        public JsonResult Delete(int productID)
+        public JsonResult DeleteProduct(int productID)
         {
             try
             {
-                var response = _productRepository.DeleteApplication(productID);
+                var response = _productRepository.DeleteProduct(productID);
                 return Json(response);
 
             }
@@ -59,18 +60,19 @@ namespace ShopBridge.Controllers
 
         /// <summary>Modifies the specified product data based on the identifier.</summary>
         /// <param name="productID">The product identifier.</param>
-        /// <returns>
-        ///   <br />
-        /// </returns>
-        public ActionResult Modify(int productID)
+        [HttpPost]
+        public JsonResult ModifyProduct (Product product)
         {
-            var savedProductList = _productRepository.GetProducts();
-            if (productID > 0)
+            try
             {
-                var selectedProduct = savedProductList.FirstOrDefault(i => i.productId == productID);
-            }
+                var response = _productRepository.ModifyProduct(product);
+                return Json(response);
 
-         return View();
+            }
+            catch (Exception e)
+            {
+                return Json(false);
+            }
         }
 
         /// <summary>Adds the product.</summary>

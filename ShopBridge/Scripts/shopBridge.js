@@ -1,105 +1,173 @@
+var productDataTable = null;
+
+$(function () {
+    init();
+});
+
 function init() {
+    productDataTable = $('#productTable').DataTable({
+        scrollY: '400px',
+        paging: false,
+        ordering: true,
+        searching: true,
+    });
     clearForm();
     getAllProduct();
 }
+
+
 function clearForm() {
     $("#productForm")[0].reset();
+    $("#addButton").show();
+    $("#modifyButton").hide();
 }
+
 function addProduct() {
-    var data = $("#productForm").serialize();
-    $.ajax({
-        type: "POST",
-        dataType: "json",
-        url: "/Product/AddProduct",
-        contenttype: 'application/json; charset=utf-8',
-        data: data,
-        success: function (data) {
-            console.log("Success");
-            alert("Saved Successfully");
-        },
-        error: function (data) {
-            console.log("Failure");
-            alert("Error while saving");
+    if (validateForm()){
+        var data = $("#productForm").serialize();
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/Product/AddProduct",
+            contenttype: 'application/json; charset=utf-8',
+            data: data,
+            success: function (data) {
+                console.log("Success");
+                clearForm();
+                getAllProduct();
+                alert("Saved Successfully");
+            },
+            error: function (data) {
+                console.log("Failure");
+                alert("Error while saving");
+            }
+        });
+    }
+}
+
+function validateForm() {
+    $('.error-message').hide();
+    var isValid = false;
+
+    var focusElement = null;
+    $("input[type='text'],input[type='number']").each(function () {
+        if (!$(this).val().trim()) {
+            var errorElement = $(this).next('.error-message');
+            $(errorElement).html("<sup>*</sup> Please " + this.placeholder);
+            $(errorElement).show();
+            focusElement = (focusElement == null) ? $(this) : focusElement;
         }
     });
+
+    if (focusElement == null) {
+        isValid = true;
+    }
+    else {
+        focusElement.focus();
+    }
+
+    return isValid;
 }
 
 function modifyProduct() {
-    var data = $("#productForm").serialize();
-    $.ajax({
-        type: "POST",
-        dataType: "json",
-        url: "/Product/Modify",
-        contenttype: 'application/json; charset=utf-8',
-        data: data,
-        success: function (data) {
-            console.log("Success");
-            alert("Saved Successfully");
-        },
-        error: function (data) {
-            console.log("Failure");
-            alert("Error while saving");
-        }
-    });
+    if (validateForm()) {
+        var data = $("#productForm").serialize();
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/Product/ModifyProduct",
+            contenttype: 'application/json; charset=utf-8',
+            data: data,
+            success: function (data) {
+                console.log("Success");
+                clearForm();
+                getAllProduct();
+                alert("Product Modified Successfully");
+            },
+            error: function (data) {
+                console.log("Failure");
+                alert("Error while modifying");
+            }
+        });
+    }
 }
 
 function deleteProduct(productId) {
-    var data = 'id=' + productId;
-    $.ajax({
-        type: "POST",
-        dataType: "json",
-        url: "/Product/Delete",
-        contenttype: 'application/json; charset=utf-8',
-        data: data,
-        success: function (data) {
-            console.log("Success");
-            alert("Saved Successfully");
-        },
-        error: function (data) {
-            console.log("Failure");
-            alert("Error while saving");
-        }
-    });
+    if (confirm("Are you sure to delete the product")) {
+        var data = 'productID=' + productId;
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/Product/DeleteProduct",
+            contenttype: 'application/json; charset=utf-8',
+            data: data,
+            success: function (data) {
+                console.log("Success");
+                clearForm();
+                getAllProduct();
+                alert("Deleted Successfully");
+            },
+            error: function (data) {
+                console.log("Failure");
+                alert("Error while saving");
+            }
+        });
+    }
 }
+
 function getAllProduct() {
     $.ajax({
-        type: "POST",
+        type: "GET",
         dataType: "json",
         url: "/Product/GetAllProducts",
         contenttype: 'application/json; charset=utf-8',
         success: function (data) {
             var productList = data;
+            var productArray = [];
+            for (var i = 0; i < productList.length; i++)
+            {
+                var actionButton = "<button class='btn btn-sm btn-danger float-right action-btn mr-2' onclick='deleteProduct(\"" + productList[i].productId + "\")'><i class='fa fa-trash'></i></button>" +
+                    "<button class='btn btn-sm btn-secondary float-right action-btn mr-2' onclick='getProduct(\"" + productList[i].productId+ "\")'><i class='fa fa-edit'></i></button>";
 
-            var htmlText = "";
-            for (var i = 0; i < productList.length; i++) {
-                htmlText += "<li class='list-group-item'>" + productList[i].productname +
-                    "<span class='float-right text-danger mr-2' onclick='deleteProduct(\"" + productList[i].productid + "\")'>Delete</span>" +
-                    "<span class='float-right text-success mr-2' onclick='getProduct(\"" + productList[i].productid + "\")'>Edit</span>" +
-                    "</li>";
+                productArray.push([
+                    productList[i].productName,
+                    actionButton,
+                ]);
             }
-            $("#productList").html(htmlText);
+            productDataTable.clear().rows.add(productArray).draw();
+            productDataTable.columns.adjust().draw();
+            
         },
         error: function (data) {
             console.log("Failure");
-            alert("Error while saving");
+            alert("Error while retrieving");
         }
     });
 }
+
 function getProduct(productId) {
-    var data = 'id=' + productId;
+    var data = 'productID=' + productId;
     $.ajax({
-        type: "POST",
+        type: "GET",
         dataType: "json",
-        url: "/Product/GetAll",
+        url: "/Product/GetAllProducts",
         contenttype: 'application/json; charset=utf-8',
         data: data,
         success: function (data) {
-            console.log("Success");
-            alert("Saved Successfully");
+            console.log(data);
+            $("#productName").val(data.productName);
+            $("#productId").val(data.productId);
+            $("#productDescription").val(data.productDescription);
+            $("#productPrice").val(data.productPrice);
+            $("#productCode").val(data.productCode);
+            $("#productAvailableCount").val(data.productAvailableCount);
+            $("#addButton").hide();
+            $("#modifyButton").show();
+            
         },
         error: function (data) {
             console.log("Failure");
-            alert("Error while saving");
+            alert("Error while retrieving");
         }
     });
 }

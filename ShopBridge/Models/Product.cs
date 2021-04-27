@@ -12,6 +12,7 @@ namespace ShopBridge.Models
         public string productCode { get; set; }
         public string productDescription { get; set; }
         public string productPrice { get; set; }
+        public int productAvailableCount { get; set; }
 
     }
 }

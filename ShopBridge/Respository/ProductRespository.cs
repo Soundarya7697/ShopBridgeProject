@@ -18,9 +18,9 @@ namespace ShopBridge.Respository
                                                            ([ProductName]
                                                            ,[ProductDescription]
                                                            ,[ProductPrice]
-                                                           ,[ProductCode])
+                                                           ,[ProductCode],[ProductAvailableCount])
                                                      VALUES
-                                                           (@ProductName,@ProductDescription,@ProductPrice,@ProductCode)";
+                                                           (@ProductName,@ProductDescription,@ProductPrice,@ProductCode,@ProductAvailableCount)";
             using (SqlConnection connection = GetSQLConnection())
             {
                 using (SqlCommand cmd = new SqlCommand(sql, connection))
@@ -32,6 +32,42 @@ namespace ShopBridge.Respository
                         cmd.Parameters.AddWithValue("@ProductDescription", product.productDescription);
                         cmd.Parameters.AddWithValue("@ProductPrice", product.productPrice);
                         cmd.Parameters.AddWithValue("@ProductCode", product.productCode);
+                        cmd.Parameters.AddWithValue("@ProductAvailableCount", product.productAvailableCount);
+                        cmd.ExecuteNonQuery();
+                    }
+                    catch (SqlException ex)
+                    {
+                        throw;
+                    }
+                }
+            }
+            return true;
+        }
+
+        /// <summary>Modifies the product details.</summary>
+        /// <param name="product">The product.</param>
+        public bool ModifyProduct (Product product)
+        {
+            string sql = @"UPDATE [dbo].[ProductTable]
+                                               SET [ProductName] = @ProductName
+                                                  ,[ProductDescription] = @ProductDescription
+                                                  ,[ProductPrice] = @ProductPrice
+                                                  ,[ProductCode] = @ProductCode
+                                                  ,[ProductAvailableCount] = @ProductAvailableCount
+                                             WHERE ([ProductID]= @ProductID);";
+            using (SqlConnection connection = GetSQLConnection())
+            {
+                using (SqlCommand cmd = new SqlCommand(sql, connection))
+                {
+                    try
+                    {
+                        cmd.Parameters.Clear();
+                        cmd.Parameters.AddWithValue("@ProductName", product.productName);
+                        cmd.Parameters.AddWithValue("@ProductDescription", product.productDescription);
+                        cmd.Parameters.AddWithValue("@ProductPrice", product.productPrice);
+                        cmd.Parameters.AddWithValue("@ProductCode", product.productCode);
+                        cmd.Parameters.AddWithValue("@ProductAvailableCount", product.productAvailableCount);
+                        cmd.Parameters.AddWithValue("@ProductID", product.productId);
                         cmd.ExecuteNonQuery();
                     }
                     catch (SqlException ex)
@@ -55,17 +91,21 @@ namespace ShopBridge.Respository
                 {
                     try
                     {
+                        cmd.Parameters.AddWithValue("@ProductID", productID);
                         cmd.CommandText = sql;
                         using (SqlDataReader rowrd = cmd.ExecuteReader())
                         {
                             if (rowrd.HasRows)
                             {
-                                productDetails.productId = (int)rowrd["ProductID"];
-                                productDetails.productName = rowrd["ProductName"].ToString();
-                                productDetails.productCode = rowrd["ProductCode"].ToString();
-                                productDetails.productDescription = rowrd["ProductDescription"].ToString();
-                                productDetails.productPrice = rowrd["ProductPrice"].ToString();
-
+                                if (rowrd.Read())
+                                {
+                                    productDetails.productId = (int)rowrd["ProductID"];
+                                    productDetails.productName = rowrd["ProductName"].ToString();
+                                    productDetails.productCode = rowrd["ProductCode"].ToString();
+                                    productDetails.productDescription = rowrd["ProductDescription"].ToString();
+                                    productDetails.productPrice = rowrd["ProductPrice"].ToString();
+                                    productDetails.productAvailableCount = (int)rowrd["ProductAvailableCount"];
+                                }
                             }
                         }
 
@@ -105,6 +145,7 @@ namespace ShopBridge.Respository
                                         productCode = rowrd["ProductCode"].ToString(),
                                         productDescription = rowrd["ProductDescription"].ToString(),
                                         productPrice = rowrd["ProductPrice"].ToString(),
+                                        productAvailableCount = (int)rowrd["ProductAvailableCount"]
                                     };
                                     _productsList.Add(prodTemp);
                                 }
@@ -124,7 +165,7 @@ namespace ShopBridge.Respository
 
         /// <summary>Deletes the application.</summary>
         /// <param name="productId">The product identifier.</param>
-        public bool DeleteApplication(int productId)
+        public bool DeleteProduct(int productId)
         {
             if (productId <= 0)
             {
